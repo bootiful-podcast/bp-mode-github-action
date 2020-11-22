@@ -12,8 +12,12 @@ const github = require('@actions/github');
 try {
 
   function resolveGithubAction() {
+    // we assume development by default; production only in
+    // a very specific, purposeful scenario
     const {context} = require("@actions/github");
-    return context.payload.action;
+    if (context && context.payload && context.payload.action)
+      return context.payload.action;
+    return null
   }
 
   const action = resolveGithubAction();
@@ -21,8 +25,10 @@ try {
   // console.log(github.context)
   // console.log(github.context.payload)
   const bpMode = action === 'deploy-production-event' ? 'production' : 'development'
+
   core.exportVariable('BP_MODE', bpMode.toUpperCase())
   core.exportVariable('BP_MODE_LOWERCASE', bpMode.toLowerCase())
+
   const time = (new Date()).toTimeString();
   core.setOutput("time", time);
   console.log('the BP_MODE is ' + bpMode)
@@ -34,8 +40,7 @@ try {
       console.log(`exporting ${sansSuffix} to have the value of ${k}`)
     }
   }
-}
-catch (error) {
+} catch (error) {
   core.setFailed(error.message);
 }
 
