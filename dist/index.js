@@ -18,6 +18,9 @@ const github = __webpack_require__(16);
 // todo analyze the incoming event payload and then set BP_MODE to be something useful
 try {
 
+  console.log(github.context)
+  console.log(github.context.payload)
+
   const time = (new Date()).toTimeString();
   core.setOutput("time", time);
 
@@ -32,7 +35,6 @@ try {
       const sansSuffix = k.substring(0, k.length - (1 + bpMode.length))
       core.exportVariable(sansSuffix, process.env[k])
       console.log(`exporting ${sansSuffix} to have the value of ${k}`)
-
     }
   }
 
