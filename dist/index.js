@@ -18,17 +18,27 @@ const github = __webpack_require__(16);
 // todo analyze the incoming event payload and then set BP_MODE to be something useful
 try {
 
-  console.log(github.context)
-  console.log(github.context.payload)
+  function resolveGithubAction() {
+    // we assume development by default; production only in
+    // a very specific, purposeful scenario
+    const {context} = __webpack_require__(16);
+    if (context && context.payload && context.payload.action)
+      return context.payload.action;
+    return null
+  }
+
+  const action = resolveGithubAction();
+  // console.log(action)
+  // console.log(github.context)
+  // console.log(github.context.payload)
+  const bpMode = action === 'deploy-production-event' ? 'production' : 'development'
+
+  core.exportVariable('BP_MODE', bpMode.toUpperCase())
+  core.exportVariable('BP_MODE_LOWERCASE', bpMode.toLowerCase())
 
   const time = (new Date()).toTimeString();
   core.setOutput("time", time);
-
-  // const configServerUsername = core.getInput('config-server-username')
-
-  const bpMode = (process.env.BP_MODE_LOWERCASE || process.env.BP_MODE || '').trim().toLowerCase()
   console.log('the BP_MODE is ' + bpMode)
-
   for (let k in process.env) {
     const isForThisEnvironment = k.toLowerCase().endsWith('_' + bpMode)
     if (isForThisEnvironment) {
@@ -37,8 +47,6 @@ try {
       console.log(`exporting ${sansSuffix} to have the value of ${k}`)
     }
   }
-
-
 } catch (error) {
   core.setFailed(error.message);
 }
